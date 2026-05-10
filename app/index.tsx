@@ -2,10 +2,10 @@ import {Text, View , StyleSheet } from 'react-native'
 
 export default function Index(){
   return(
-    <view style = {styles.container}>
-      <text style = {styles.title}>Geo Alarm</text>
-      <text style = {styles.subtitle}>Set a location. We'll wake you up.</text>
-    </view>
+    <View style = {styles.container}>
+      <Text style = {styles.title}>Geo Alarm</Text>
+      <Text style = {styles.subtitle}>Set a location. We'll wake you up.</Text>
+    </View>
   )
 }
 
@@ -26,6 +26,6 @@ const styles = StyleSheet.create({
     flex : 1,
     backgroundColor : '#0f0f1a',
     justifyContent : 'center',
-    alignContent : 'center'
+    alignItems : 'center'
   },
 });

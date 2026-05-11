@@ -1,7 +1,8 @@
-import { View , StyleSheet } from 'react-native'
+import { View , StyleSheet , Text} from 'react-native'
 import MapView, {Marker, Circle} from 'react-native-maps';
 import {useState,useEffect} from 'react';
 import * as Location from 'expo-location';
+import {getDistance} from '../utils/haversine'
 import { subscribe } from 'expo-router/build/link/linking';
 
 
@@ -9,6 +10,16 @@ export default function Index(){
   const [pinLocation, setPinLocation] = useState(null);
   const [myLocation, setMyLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
+  const [distance, setDistance] = useState(null);
+
+  useEffect(()=>{
+    if(!myLocation || !pinLocation) return;
+
+    const dist = getDistance(myLocation,pinLocation);
+    setDistance(dist);
+  },[myLocation,pinLocation]);
+
+
  const handleMapPress = (event) => {
   const coordinate = event?.nativeEvent?.coordinate ?? event?.coordinate;
   if (!coordinate) return;
@@ -74,6 +85,19 @@ useEffect(()=>{
         {myLocation && (<Marker coordinate={myLocation}
         pinColor='blue'/>)}
       </MapView>
+      {distance !== null && (
+        <View style = {styles.distanceBox}>
+          <Text style = {styles.distanceText}>
+            {
+              distance < 1000 ? `${Math.round(distance)}m away`
+              : `${(distance/1000).toFixed(1)}km away`
+            }
+          </Text>
+          {distance <= 500 && (
+            <Text style = {styles.alarmText}> You are in alarm Zone!</Text>
+          )}
+        </View>
+      )}
     </View>
     // <View style = {styles.container}>
     //   <Text style = {styles.title}>Geo Alarm</Text>
@@ -89,5 +113,20 @@ const styles = StyleSheet.create({
   },
   map:{
     flex : 1,
+  },
+  distanceBox : {
+    backgroundColor : '#0f0f1a',
+    padding : 16,
+    alignItems : 'center'
+  },
+  distanceText : {
+    color : `#ffffff`,
+    fontSize : 18,
+    fontWeight : 'bold'
+  },
+  alarmText : {
+    color : `#f5930b`,
+    fontSize : 14,
+    marginTop: 4,
   },
 });

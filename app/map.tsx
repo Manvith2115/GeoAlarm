@@ -1,4 +1,4 @@
-import { View , StyleSheet , Text, TouchableOpacity, Vibration} from 'react-native'
+import { View , StyleSheet , Text, TouchableOpacity} from 'react-native'
 import MapView, {Marker, Circle} from 'react-native-maps';
 import Slider from '@react-native-community/slider'
 import {useState,useEffect} from 'react';
@@ -6,7 +6,26 @@ import * as Location from 'expo-location';
 import {getDistance} from '../utils/haversine'
 import {Audio} from 'expo-av';
 import { Vibration as RNVibration } from 'react-native';
-import { subscribe } from 'expo-router/build/link/linking';
+import * as TaskManager from 'expo-task-manager'
+
+const LOCATION_TASK_NAME = 'background-location-task';
+
+TaskManager.defineTask(LOCATION_TASK_NAME,({data,error})=>{
+  if(error)
+  {
+    console.log('BackGround location error',error)
+    return;
+  }
+  if(data)
+  {
+    const {locations} = data;
+    const location = locations[0];
+    if(location)
+    {
+      console.log('BackGround location: ',location.coords);
+    }
+  }
+});
 
 
 export default function Index(){
@@ -82,12 +101,23 @@ useEffect(()=>{
   let subscriber = null;
 
   const startLocationTracking = async () => {
-    const {status} = await Location.requestForegroundPermissionsAsync();
-    // console.log('Permission status:', status);   
+    const {status : foregroundStatus} = await Location.requestForegroundPermissionsAsync();
 
-    if(status !== "granted"){
-      setLocationError("Location permission denied");
-      return;
+    if(foregroundStatus !== 'granted') return;
+    
+    const {status : backgroundStatus} = await Location.requestBackgroundPermissionsAsync();
+
+    if(backgroundStatus === 'granted'){
+      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME,{
+        accuracy : Location.Accuracy.High,
+        timeInterval : 3000,
+        distanceInterval : 10,
+        foregroundService : {
+          notificationTitle : 'GeoAlarm is Active',
+          notificationBody : 'Tracking your location for alarm',
+          notificationColor : '#0f0f1a',
+        },
+      });
     }
 
     subscriber = await Location.watchPositionAsync(
@@ -190,10 +220,6 @@ if(!setupDone)
         </View>
       )}
     </View>
-    // <View style = {styles.container}>
-    //   <Text style = {styles.title}>Geo Alarm</Text>
-    //   <Text style = {styles.subtitle}>Set a location. We'll wake you up.</Text>
-    // </View>
   );
 }
 
@@ -208,7 +234,7 @@ const styles = StyleSheet.create({
   setupTitle:{
     fontSize : 32,
     fontWeight : 'bold',
-    color : '#fffff',
+    color : '#ffffff',
     marginBottom : 8,
   },
   setupSubtitle:{

@@ -1,50 +1,138 @@
-# Welcome to your Expo app 👋
+# GeoAlarm
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Never miss your stop again.
 
-## Get started
+GeoAlarm is a location-based alarm mobile app built with React Native and Expo. Instead of setting a time-based alarm, you drop a pin anywhere on the map and set a radius. The moment you enter that zone, your phone rings and vibrates to wake you up.
 
-1. Install dependencies
+**Built for one simple use case** — sleeping on a bus and not missing your stop.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## Download
 
-   ```bash
-   npx expo start
-   ```
+[Download APK (v1.0.0)](https://github.com/Manvith2115/GeoAlarm/releases/tag/v1.0.0)
 
-In the output, you'll find options to open the app in a
+> Android only. Enable "Install from unknown sources" in your settings before installing.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## How it works
 
-## Get a fresh project
+1. Open the app and set your alarm radius (100m to 5km)
+2. Tap anywhere on the map to drop a destination pin
+3. Lock your phone and sleep
+4. GeoAlarm tracks your location in the background
+5. When you enter the alarm zone — it rings and vibrates
+6. Tap **Stop** to dismiss
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
+## Features
+
+- Interactive Google Maps with tap-to-drop destination pin
+- Variable alarm radius via slider (100m to 5km)
+- Visual radius circle drawn on the map
+- Real-time GPS tracking (updates every 3 seconds)
+- Haversine formula for accurate distance calculation
+- Alarm sound + vibration pattern when entering the zone
+- Background location tracking (works with screen locked)
+- Persistent foreground notification while alarm is active
+- Stop button to dismiss the alarm
+
+---
+
+## Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| React Native + Expo | Cross-platform mobile framework |
+| expo-location | Real-time GPS tracking + background tasks |
+| expo-av | Alarm sound playback |
+| expo-task-manager | Background location processing |
+| react-native-maps | Google Maps integration |
+| @react-native-community/slider | Radius selector UI |
+| Haversine formula | Accurate GPS distance calculation |
+| EAS Build | Cloud-based APK compilation |
+
+---
+
+## Project Structure
+
+```
+GeoAlarm/
+├── app/
+│   ├── index.tsx        ← Landing screen
+│   ├── map.tsx          ← Map, radius selector, alarm logic
+│   └── _layout.tsx      ← Navigation layout
+├── utils/
+│   └── haversine.js     ← Distance calculation formula
+├── assets/
+│   └── alarm.mp3        ← Alarm sound
+├── app.json             ← Expo + Android config
+└── eas.json             ← EAS build profiles
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Run Locally
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Clone the repo
+git clone https://github.com/Manvith2115/GeoAlarm.git
+cd GeoAlarm
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Install dependencies
+npm install
 
-## Join the community
+# Create .env file
+echo "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here" > .env
 
-Join our community of developers creating universal apps.
+# Start development server
+npx expo start --clear
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+> You'll need a Google Maps API key with Maps SDK for Android enabled.
+> Get one at console.cloud.google.com
+
+---
+
+## Build APK
+
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login to Expo
+eas login
+
+# Build APK
+eas build --platform android --profile preview
+```
+
+---
+
+## What I learned building this
+
+- React Native component lifecycle and hooks (useState, useEffect)
+- Async/await for handling GPS and audio APIs
+- Background location tracking on Android
+- The Haversine formula for calculating real-world distances from GPS coordinates
+- EAS Build for compiling and distributing Android APKs
+- Managing API keys securely with environment variables
+
+---
+
+## Future Plans
+
+- Search bar for typing destinations (Google Places API)
+- Multiple saved alarm locations
+- iOS support
+- Alarm scheduling (set alarm in advance)
+- Play Store release
+
+---
+
+## Built by
+
+**Manvith** — May 2026  
+[GitHub](https://github.com/Manvith2115)

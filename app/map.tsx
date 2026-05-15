@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   okButtonText : {
     color : '#0f0f1a',
     fontSize : 18,
-    fontWeight : 'bold',
+    fontWeight : 'bold',  
     letterSpacing : 1,
   },
 

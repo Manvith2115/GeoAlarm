@@ -1,6 +1,6 @@
 import { View , StyleSheet , Text, TouchableOpacity} from 'react-native'
 import { router } from 'expo-router';
-import { subscribe } from 'expo-router/build/link/linking';
+// import { subscribe } from 'expo-router/build/link/linking';
 
 export default function Index() {
   return(

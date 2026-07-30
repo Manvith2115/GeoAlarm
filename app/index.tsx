@@ -1,64 +1,42 @@
-import { View , StyleSheet , Text, TouchableOpacity} from 'react-native'
 import { router } from 'expo-router';
-// import { subscribe } from 'expo-router/build/link/linking';
+import { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text } from 'react-native';
 
 export default function Index() {
-  return(
-    <View style = {styles.container}>
-      <View style = {styles.titleSection}>
-        <Text style = {styles.title}>GeoAlarm</Text>
-        <Text style = {styles.subtitle}>Set a Location{'\n'}Not an Alarm</Text>
-      </View>
-      <TouchableOpacity
-        style = {styles.startButton}
-        onPress ={()=>router.push('/map')}
-        >
-          <Text style = {styles.startButtonText}>Set Alarm</Text>
-        </TouchableOpacity>
-    </View>
-  )
+
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(()=>{
+  Animated.sequence([
+    Animated.timing(opacity,{toValue : 1,duration : 1000,useNativeDriver : true}),
+    Animated.delay(50),
+    Animated.timing(opacity,{toValue : 0,duration : 800,useNativeDriver : true}),
+  ]).start(()=>{
+    router.replace('/alarms');
+  })
+
+  },[])
+  return (
+    <Animated.View style = {{opacity, flex : 1,backgroundColor : '#0f0f0f',alignItems : 'center',justifyContent : 'center'}}>
+      <Text style={styles.title}>GeoAlarm</Text>
+      <Text style={styles.subtitle}>Set the Location.{'\n'}Not an Alarm.</Text>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({
-
-  container : {
-    flex : 1,
-    backgroundColor: '#0f0f1a',
-    justifyContent: 'space-between',
-    paddingHorizontal: 80,
-    paddingVertical: 24,
-  },
-  titleSection:{
-    flex : 1,
-    justifyContent : 'center',
-  },
   title:{
     fontSize : 39,
     fontWeight : 'bold',
     color : '#ffffff',
     letterSpacing : 2,
-    alignItems: 'center'
   },
   subtitle : {
     fontSize: 20,
     color : '#888888',
     marginTop : 12,
     lineHeight : 28,
-    marginLeft : 30,
     
     // alignContent : 'center'
-  },
-  startButton : {
-    backgroundColor : '#ffffff',
-    paddingVertical : 18,
-    borderRadius : 12,
-    
-    alignItems: 'center',
-  },
-  startButtonText:{
-    color : '#0f0f1a',
-    fontSize : 18,
-    fontWeight : 'bold',
-    letterSpacing : 1,
-  },
+  }
 });

@@ -1,12 +1,11 @@
-import { View , StyleSheet , Text, TouchableOpacity} from 'react-native'
-import MapView, {Marker, Circle} from 'react-native-maps';
-import Slider from '@react-native-community/slider'
-import {useState,useEffect} from 'react';
+import { Audio } from 'expo-av';
 import * as Location from 'expo-location';
-import {getDistance} from '../utils/haversine'
-import {Audio} from 'expo-av';
-import { Vibration as RNVibration } from 'react-native';
-import * as TaskManager from 'expo-task-manager'
+import { useLocalSearchParams } from 'expo-router';
+import * as TaskManager from 'expo-task-manager';
+import { useEffect, useState } from 'react';
+import { Alert, Linking, Vibration as RNVibration, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Circle, Marker } from 'react-native-maps';
+import { getDistance } from '../utils/haversine';
 
 const LOCATION_TASK_NAME = 'background-location-task';
 
@@ -28,15 +27,23 @@ TaskManager.defineTask(LOCATION_TASK_NAME,({data,error})=>{
 });
 
 
-export default function Index(){
-  const [setupDone,setSetupDone] = useState(false);
+
+export default function Map(){
   const [pinLocation, setPinLocation] = useState(null);
   const [myLocation, setMyLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [distance, setDistance] = useState(null);
   const [alarmActive, setAlarmActive] = useState(false);
   const [sound, setSound] = useState(null);
+  const {radius: paramRadius,alarmId } = useLocalSearchParams();
   const [radius, setRadius] = useState(500);
+
+ useEffect(() => {
+  console.log('paramRadius received:', paramRadius);
+  if (paramRadius) {
+    setRadius(Number(paramRadius));
+  }
+}, [paramRadius]);
   
   const formatRadius = (value) => {
     if(value >= 1000){
@@ -91,6 +98,20 @@ export default function Index(){
     setAlarmActive(false);
   };
 
+  useEffect(()=>{
+    return () => {
+      RNVibration.cancel();
+      if(sound)
+      {
+        sound.getStatusAsync().then((status)=>{
+          if(status.isLoaded){
+            sound.stopAsync().then(()=> sound.unloadAsync());
+          }
+        }).catch(()=>{});
+      }
+    };
+  },[sound]);
+
  const handleMapPress = (event) => {
   const coordinate = event?.nativeEvent?.coordinate ?? event?.coordinate;
   if (!coordinate) return;
@@ -104,21 +125,6 @@ useEffect(()=>{
     const {status : foregroundStatus} = await Location.requestForegroundPermissionsAsync();
 
     if(foregroundStatus !== 'granted') return;
-    
-    const {status : backgroundStatus} = await Location.requestBackgroundPermissionsAsync();
-
-    if(backgroundStatus === 'granted'){
-      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME,{
-        accuracy : Location.Accuracy.High,
-        timeInterval : 3000,
-        distanceInterval : 10,
-        foregroundService : {
-          notificationTitle : 'GeoAlarm is Active',
-          notificationBody : 'Tracking your location for alarm',
-          notificationColor : '#0f0f1a',
-        },
-      });
-    }
 
     subscriber = await Location.watchPositionAsync(
       {
@@ -133,7 +139,38 @@ useEffect(()=>{
         });
       }
     );
+    const {status : backgroundStatus} = await Location.requestBackgroundPermissionsAsync();
+
+    if(backgroundStatus === 'granted'){
+      await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME,{
+        accuracy : Location.Accuracy.High,
+        timeInterval : 3000,
+        distanceInterval : 10,
+        foregroundService : {
+          notificationTitle : 'GeoAlarm is Active',
+          notificationBody : 'Tracking your location for alarm',
+          notificationColor : '#0f0f1a',
+        },
+      });
+    }
+    else{
+      Alert.alert(
+        'BackGround Location Required',
+        'GeoAlarm needs "Allow all the time" location access to wake you up when your screen is locked.\n\nTap OK to open settings -> Allow all the time.',
+        [
+          {
+            text : 'Open Settings',
+            onPress:() => Linking.openSettings(),
+          },
+          {
+            text : 'Cancel',
+            style : 'cancel',
+          },
+        ]
+      );
+    }
   };
+
 
   startLocationTracking();
 
@@ -143,39 +180,6 @@ useEffect(()=>{
     }
   };
 },[]);
-if(!setupDone)
-{
-    return (
-        <View style = {styles.setupContainer}>
-            <Text style = {styles.setupTitle}>Set Alarm Radius</Text>
-            <Text style = {styles.setupSubtitle}>Alarm triggers when you are within this distance</Text>
-            <Text style = {styles.radiusValue}>{formatRadius(radius)}</Text>
-
-            <Slider 
-                style = {styles.slider}
-                minimumValue={100}
-                maximumValue={5000}
-                step = {50}
-                value = {radius}
-                onValueChange={(value)=>setRadius(value)}
-                minimumTrackTintColor='#ffffff'
-                maximumTrackTintColor='#444444'
-                thumbTintColor='#ffffff'/>
-
-            <View style = {styles.sliderLabels}>
-                <Text style = {styles.sliderLabel}>100m</Text>
-                <Text style = {styles.sliderLabel}>5km</Text>
-            </View>
-            
-            <TouchableOpacity 
-                style = {styles.okButton}
-                onPress = {()=> setSetupDone(true)}
-            >
-                <Text style = {styles.okButtonText}>OK</Text>
-            </TouchableOpacity>
-        </View>
-    );
-}
 
   return(
     <View style = {styles.container}>
